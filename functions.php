@@ -270,9 +270,80 @@ function human_filesize($bytes, $decimals = 2) {
     $sz = 'BKMGTP';
     $factor = floor((strlen($bytes) - 1) / 3);
     return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[$factor]. 'B';
-  }
-  
+}
+
 function get_omeka_latest_version(){
     $OMEKA_VERSION_API_URL = 'https://api.omeka.org/latest-version-s';
     return file_get_contents($OMEKA_VERSION_API_URL);
 }
+function report_arg_parse_error($ok,$msg){
+    if(!$ok){
+        
+        echo $msg."\n";
+        exit(1);
+    }
+}
+function create_argParser(){
+    $result=Array();
+    return $result;
+}
+function add_parser_option(&$argParser,$option){
+    
+    report_arg_parse_error(gettype($option)=="string","\"".$option."\"option must be a string");
+    report_arg_parse_error(strlen($option)==1,"option must be of length 1");
+    $argParser["allowedShortOptions"].=$option;
+}
+function parse_args(&$argParser,$argc,$argv){
+    
+    for ($i=0; $i<$argc;$i++){
+        
+        $argType="unknown";
+        
+        if($argv[$i][0]=="-"){
+            
+            if(strlen($argv[$i])>1){
+                
+                if($argv[$i][1]=="-"){
+                    
+                    //NOTE: long option
+                    report_arg_parse_error(false,"\"".$argv[$i]."\" is a long option which isn't supported");
+                }
+                else{
+                    
+                    //NOTE: short options
+                    $argType="short";
+                    for($j=1;$j<strlen($argv[$i]);$j++){
+                        
+                        report_arg_parse_error(str_contains($argParser["allowedShortOptions"],$argv[$i][$j]),
+                            "\"".$argv[$i][$j]."\" not in allowed options \"".$argParser["allowedShortOptions"]."\"");
+                        $argParser['setShortOptions'].=$argv[$i][$j];
+                    }
+                }
+            }
+        }
+        else{
+            
+            //NOTE: argument
+            $argType="argument";
+        }
+    }
+}
+function option_is_set($argParser,$option){
+    
+    report_arg_parse_error(gettype($option)=='string',"\"".$option."\" option must be a string");
+    
+    $result=false;
+    if(strlen($option)>1){
+        
+        //NOTE: long option
+        report_arg_parse_error(false,"\"".$option."\" is a long option which isn't supported");
+    }
+    else{
+        
+        //NOTE: short option
+        $result=str_contains($argParser["setShortOptions"],$option);
+    }
+    
+    return $result;
+}
+

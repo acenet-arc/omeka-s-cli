@@ -5,7 +5,6 @@
 */
 require 'includes.php';
 
-
 if($argc<2){
     echo("No command specified. ");
     printHelp();
