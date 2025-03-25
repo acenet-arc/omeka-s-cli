@@ -220,6 +220,8 @@ $subcommands = [
 
         elevate_privileges();
         echo $api_modules;
+        $die=true;
+        $no_error_code=0;
         if(!$module){
             echo("Module not found. Trying to download it...");
             $download_url = $api_modules[$module]['versions'][$api_modules[$module]['latest_version']]['download_url'];
@@ -231,7 +233,7 @@ $subcommands = [
             }
         }
         elseif(($module->getState()=='active')||($module->getState()=='not_active')){
-            print_error('The module seems to be already installed');
+            print_error('The module seems to be already installed',$die,$no_error_code);
         }
         elseif($module->getState()!='not_installed'){
             print_error('The module cannot be installed because its status is: '.$module->getState());
