@@ -386,7 +386,8 @@ $subcommands = [
         global $argv;
         $module_name = $argv[3];
         $module = get_local_module($module_name);
-
+        $die=true;
+        $no_error_code=0;
         elevate_privileges();
         
         if(!$module){
@@ -401,7 +402,7 @@ $subcommands = [
             module_install($module);
         }
         elseif(($module->getState()=='active')){
-            print_error('The module seems to be already active');
+            print_error('The module seems to be already active',$die,$no_error_code);
         }
         elseif(($module->getState()!='not_installed')&&($module->getState()!='not_active')){
             print_error('The module cannot be installed because its status is: '.$module->getState());
@@ -416,12 +417,13 @@ $subcommands = [
         $module = get_local_module($module_name);
 
         elevate_privileges();
-        
+        $die=true;
+        $no_error_code=0;
         if(!$module){
-            print_error("Module not found");
+            print_error("Module not found",$die,$no_error_code);
         }
         elseif($module->getState()!='active'){
-            print_error('The module does not seem to be active');
+            print_error('The module does not seem to be active',$die,$no_error_code);
         }else{
             // Disable the module
             module_disable($module);
