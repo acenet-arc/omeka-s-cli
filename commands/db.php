@@ -3,10 +3,17 @@
 $subcommands = [
     "dump" => function(){
         global $application;
+        global $argc;
         global $argv;
-        global $workingDir;
-
+        
+        $argParser=create_argParser();
+        add_parser_option($argParser,"f");
+        parse_args($argParser,$argc,$argv);
         $force = false;
+        if(option_is_set($argParser,"f")){
+            $force = true;
+        }
+        global $workingDir;
 
         $serviceLocator = $application->getServiceManager();
         $settings = $serviceLocator->get('ApplicationConfig')['connection'];

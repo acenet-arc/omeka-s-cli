@@ -12,8 +12,16 @@ $subcommands = [
     },
     "upgrade" => function(){
         global $application;
+        global $argc;
         global $argv;
-        $force = ($argv[3]=='-f'||$argv[3]=='--force');
+        
+        $argParser=create_argParser();
+        add_parser_option($argParser,"f");
+        parse_args($argParser,$argc,$argv);
+        $force = false;
+        if(option_is_set($argParser,"f")){
+            $force = true;
+        }
         $serviceLocator = $application->getServiceManager();
         $settings = $serviceLocator->get('Omeka\Settings');
         $currentVersion = $settings->get('version');
@@ -22,8 +30,9 @@ $subcommands = [
         echo("Current version: $currentVersion\n");
         echo("Latest version: $latestVersion\n");
 
-        if(($latestVersion==$currentVersion)&&(!$force)){
-            print_error("Omeka S core seems up to date");
+        if(($latestVersion==$currentVersion)){
+            
+            print_error("Omeka S core seems up to date",true,0);
         }
 
         if(!$force){

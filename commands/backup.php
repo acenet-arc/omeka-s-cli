@@ -3,10 +3,17 @@
 $subcommands = [
     "create" => function(){
         global $application;
-        global $argv;
         global $workingDir;
-
+        global $argc;
+        global $argv;
+        
+        $argParser=create_argParser();
+        add_parser_option($argParser,"f");
+        parse_args($argParser,$argc,$argv);
         $force = false;
+        if(option_is_set($argParser,"f")){
+            $force = true;
+        }
 
         $serviceLocator = $application->getServiceManager();
         $settings = $serviceLocator->get('ApplicationConfig')['connection'];

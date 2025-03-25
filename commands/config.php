@@ -3,8 +3,17 @@ $subcommands = [
     "list" => function(){
         global $application;
         global $argv;
+        global $argc;
         $format = 'list';
         $mode = 'human';
+        
+        $argParser=create_argParser();
+        add_parser_option($argParser,"j");
+        parse_args($argParser,$argc,$argv);
+        
+        if(option_is_set($argParser,"j")){
+            $mode='raw';
+        }
         $serviceLocator = $application->getServiceManager();
 
         $setingsType = $argv[3] ?? 'global';

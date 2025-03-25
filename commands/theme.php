@@ -39,7 +39,7 @@ function theme_install($theme){
         print_error("Could not install theme: \n" . $e->getMessage());
     }
 }
-function theme_delete($theme){
+function theme_delete($theme,$force=false){
     global $application;
     $serviceLocator = $application->getServiceManager();
     try {
@@ -75,7 +75,10 @@ function theme_delete($theme){
             if(($answer=='y')||($answer=='y')){
                 system("rm -rf ".escapeshellarg($path));
             }
-
+        }
+        else{
+            
+            system("rm -rf ".escapeshellarg($path));
         }
     } catch (Exception $e) {
         print_error("Could not delete theme: \n" . $e->getMessage());
@@ -90,6 +93,7 @@ $subcommands = [
         global $argc;
         global $argv;
         $mode = 'human';
+        $format='table';
         
         $argParser=create_argParser();
         add_parser_option($argParser,"j");
@@ -97,9 +101,9 @@ $subcommands = [
         
         if(option_is_set($argParser,"j")){
             $mode='raw';
+            $format='json';
         }
         
-        $format = 'table';
         $services = $application->getServiceManager();
         $omekaThemes = $services->get('Omeka\Site\ThemeManager');
         $themes = $omekaThemes->getThemes();
@@ -121,7 +125,7 @@ $subcommands = [
             ];
         }
         if($mode == 'raw'){
-            output($themes_array, 'json');
+            output($themes_array, $format);
         }else{
             $result_array = [];
             foreach ($themes_array as $key => $theme) {
@@ -141,15 +145,19 @@ $subcommands = [
     },
     "download" => function(){
         global $argv;
+        global $argc;
         $theme = $argv[3];
-
-        $short_options = "f";
-        $long_options = ["force"];
-        $options = getopt($short_options, $long_options);
         
-
-        $force = (isset($options["f"]) || isset($options["force"]));
-        $force = true;
+        $argParser=create_argParser();
+        add_parser_option($argParser,"f");
+        parse_args($argParser,$argc,$argv);
+        
+        $force = false;
+        if(option_is_set($argParser,"f")){
+            
+            $force = true;
+        }
+        
         $version_to_download = '';
 
         if(empty($theme)){
@@ -173,7 +181,7 @@ $subcommands = [
                 print_error(output($theme_list, 'table', true));
             }else{
                 if(theme_is_installed($theme) && !$force){
-                    print_error('The theme seems to be already downloaded. Use the flag --force in order to download it anyway.');
+                    print_error('The theme seems to be already downloaded. Use the flag -f in order to download it anyway.');
                 }
                 if(empty($version_to_download))
                     $version_to_download = $api_themes[$theme]['latest_version'];
@@ -187,7 +195,17 @@ $subcommands = [
         
     },
     "delete" => function(){
+        global $argc;
         global $argv;
+        $force=false;
+        
+        $argParser=create_argParser();
+        add_parser_option($argParser,"f");
+        parse_args($argParser,$argc,$argv);
+        
+        if(option_is_set($argParser,"f")){
+            $force=true;
+        }
         $theme_name = $argv[3];
         $theme = get_local_theme($theme_name);
 
@@ -196,7 +214,7 @@ $subcommands = [
         if(!$theme){
             print_error("Theme not found");
         }else{
-            theme_delete($theme);
+            theme_delete($theme,$force);
         }
     },
     "update" => function(){
@@ -227,9 +245,17 @@ $subcommands = [
     "status" => function(){
         global $application;
         global $argv;
+        global $argc;
         $format = 'table';
         $mode = 'human';
-
+        
+        $argParser=create_argParser();
+        add_parser_option($argParser,"j");
+        parse_args($argParser,$argc,$argv);
+        
+        if(option_is_set($argParser,"j")){
+            $mode='raw';
+        }
         $services = $application->getServiceManager();
         $omekaThemes = $services->get('Omeka\Site\ThemeManager');
         $themes = $omekaThemes->getThemes();

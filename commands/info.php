@@ -3,8 +3,17 @@
 $subcommands = [
     "system" => function(){
         global $application;
+        global $argc;
         global $argv;
-        $format = 'table';
+        $format='list';
+        
+        $argParser=create_argParser();
+        add_parser_option($argParser,"j");
+        parse_args($argParser,$argc,$argv);
+        
+        if(option_is_set($argParser,"j")){
+            $format='json';
+        }
         
         $serviceLocator = $application->getServiceManager();
         $controller = new Omeka\Controller\Admin\SystemInfoController(
@@ -16,15 +25,21 @@ $subcommands = [
         $model = $controller->browseAction();
         $info = $model->getVariable('info');
 
-
-
-        // output($humanInfo, $format);
-        output($info, 'list');
+        output($info, $format);
     },
     "db" => function(){
         global $application;
+        global $argc;
         global $argv;
-        $format = 'list';
+        $format='list';
+        
+        $argParser=create_argParser();
+        add_parser_option($argParser,"j");
+        parse_args($argParser,$argc,$argv);
+        
+        if(option_is_set($argParser,"j")){
+            $format='json';
+        }
         
         $serviceLocator = $application->getServiceManager();
         

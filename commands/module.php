@@ -116,8 +116,20 @@ function module_delete($module){
 $subcommands = [
     "list" => function(){
         global $application;
-        $mode = 'human';
+        global $argv;
+        global $argc;
         $format = 'table';
+        $mode = 'human';
+        
+        $argParser=create_argParser();
+        add_parser_option($argParser,"j");
+        parse_args($argParser,$argc,$argv);
+        
+        if(option_is_set($argParser,"j")){
+            $mode='raw';
+            $format='json';
+        }
+        
         $services = $application->getServiceManager();
         $omekaModules = $services->get('Omeka\ModuleManager');
         $modules = $omekaModules->getModules();
@@ -156,13 +168,15 @@ $subcommands = [
         global $argv;
         $module = $argv[3];
 
-        $short_options = "f";
-        $long_options = ["force"];
-        $options = getopt($short_options, $long_options);
+        global $argc;
+        $argParser=create_argParser();
+        add_parser_option($argParser,"f");
+        parse_args($argParser,$argc,$argv);
         
-
-        $force = (isset($options["f"]) || isset($options["force"]));
-        $force = true;
+        $force=false;
+        if(option_is_set($argParser,"f")){
+            $force=true;
+        }
         $version_to_download = '';
 
         if(empty($module)){
@@ -186,7 +200,7 @@ $subcommands = [
                 print_error(output($module_list, 'table', true));
             }else{
                 if(module_is_installed($module) && !$force){
-                    print_error('The module seems to be already downloaded. Use the flag --force in order to download it anyway.');
+                    print_error('The module seems to be already downloaded. Use the flag -f in order to download it anyway.');
                 }
                 if(empty($version_to_download))
                     $version_to_download = $api_modules[$module]['latest_version'];
@@ -205,10 +219,11 @@ $subcommands = [
         $module = get_local_module($module_name);
 
         elevate_privileges();
-        
+        echo $api_modules;
         if(!$module){
             echo("Module not found. Trying to download it...");
             $download_url = $api_modules[$module]['versions'][$api_modules[$module]['latest_version']]['download_url'];
+
             if($download_url){
                 download_unzip($download_url, OMEKA_PATH.'/modules/');
             }else{
@@ -262,13 +277,19 @@ $subcommands = [
     },
     "delete" => function(){
         global $argv;
-
-        $force = false;
+        global $argc;
+        $argParser=create_argParser();
+        add_parser_option($argParser,"f");
+        parse_args($argParser,$argc,$argv);
+        
+        $force=false;
+        if(option_is_set($argParser,"f")){
+            $force=true;
+        }
 
         $module_name = $argv[3];
         $module = get_local_module($module_name);
         
-
         elevate_privileges();
         
         if(!$module){
@@ -281,6 +302,10 @@ $subcommands = [
                         // Uninstall the module
                         module_uninstall($module);
                     }
+                }
+                else{
+                    
+                    module_uninstall($module);
                 }
             }
             // Delete
@@ -345,7 +370,7 @@ $subcommands = [
                     // $module->setIni($module2->getIni());
                     try {
                         if($module2->getState()=='invalid_omeka_version'){
-                            print_error("The latest version ({$module2->getIni()['version']}) of the module is not compatible with the current version of Omeka S. Supported version contraint is: {$module2->getIni()['omeka_version_constraint']}", false);
+                            print_error("The latest version ({$module2->getIni()['version']}) of the module is not compatible with the current version of Omeka S. Supported version constraint is: {$module2->getIni()['omeka_version_constraint']}", false);
                         }elseif($module2->getState()=='needs_upgrade'){
                             module_update($module2);
                             echo("Module {$module->getId()} upgraded.\n");

@@ -195,10 +195,10 @@ function get_theme_list_from_api(){
     return json_decode(file_get_contents($THEME_LIST_API_URL), true);
 }
 
-function print_error($message, $die = true){
+function print_error($message, $die = true,$error_code=1){
     fwrite(STDERR, $message."\n");
     if($die){
-        exit(1);
+        exit($error_code);
     }
 }
 
@@ -283,6 +283,8 @@ function report_arg_parse_error($ok,$msg){
         exit(1);
     }
 }
+
+
 function create_argParser(){
     $result=Array();
     return $result;
