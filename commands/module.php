@@ -432,7 +432,16 @@ $subcommands = [
     "status" => function(){
         global $application;
         global $argv;
+        global $argc;
         $format = 'table';
+        
+        $argParser=create_argParser();
+        add_parser_option($argParser,"j");
+        parse_args($argParser,$argc,$argv);
+        
+        if(option_is_set($argParser,"j")){
+            $format='json';
+        }
         $services = $application->getServiceManager();
         $omekaModules = $services->get('Omeka\ModuleManager');
         $modules = $omekaModules->getModules();
@@ -451,8 +460,7 @@ $subcommands = [
                 'isConfigurable' => $module->isConfigurable(),
             ]], $format);
         }else{
-            echo("Module {$argv[3]} not found\n");
-            exit(1);
+            print_error("Module {$argv[3]} not found\n");
         }
         
     },
