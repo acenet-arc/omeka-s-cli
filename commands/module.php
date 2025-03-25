@@ -168,6 +168,8 @@ $subcommands = [
         global $argv;
         $module = $argv[3];
 
+        $die=true;
+        $no_error_code=0;
         global $argc;
         $argParser=create_argParser();
         add_parser_option($argParser,"f");
@@ -200,7 +202,8 @@ $subcommands = [
                 print_error(output($module_list, 'table', true));
             }else{
                 if(module_is_installed($module) && !$force){
-                    print_error('The module seems to be already downloaded. Use the flag -f in order to download it anyway.');
+                    print_error('The module seems to be already downloaded. Use the flag -f in order to download it anyway.',
+                        $die,$no_error_code);
                 }
                 if(empty($version_to_download))
                     $version_to_download = $api_modules[$module]['latest_version'];
