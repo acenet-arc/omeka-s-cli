@@ -222,6 +222,8 @@ $subcommands = [
         $theme_name = $argv[3];
         $theme = get_local_theme($theme_name);
 
+        $die=true;
+        $no_error_code=0;
         elevate_privileges();
 
         $api_theme = get_theme_list_from_api()[$theme->getId()];
@@ -232,7 +234,7 @@ $subcommands = [
 
         if($api_theme){
             if($theme->getIni()['version']==$api_theme['latest_version']){
-                print_error('The theme does not seem to have available updates');
+                print_error('The theme does not seem to have available updates',$die,$no_error_code);
             }else{
                 // Download latest version and upgrade the theme
                 theme_download($theme, $api_theme);
