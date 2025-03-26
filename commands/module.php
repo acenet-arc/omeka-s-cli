@@ -89,7 +89,7 @@ function module_update($module){
         throw new Exception("Could not perform database update for the module: \n" . $e->getMessage());
     }
 }
-function module_delete($module){
+function module_delete($module,$force){
     global $application;
     $services = $application->getServiceManager();
     $moduleManager = $services->get('Omeka\ModuleManager');
@@ -107,6 +107,9 @@ function module_delete($module){
                 system("rm -rf ".escapeshellarg($path));
             }
 
+        }
+        else{
+            system("rm -rf ".escapeshellarg($path));
         }
     } catch (Exception $e) {
         print_error("Could not delete module: \n" . $e->getMessage());
@@ -314,7 +317,7 @@ $subcommands = [
                 }
             }
             // Delete
-            module_delete($module);
+            module_delete($module,$force);
         }
     },
     "update" => function(){
